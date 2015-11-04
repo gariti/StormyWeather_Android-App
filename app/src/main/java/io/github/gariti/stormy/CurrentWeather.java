@@ -15,6 +15,7 @@ public class CurrentWeather {
     private double mHumidity;
     private double mPrecipChance;
     private String mSummary;
+    private String mLocationLabel;
 
     public String getTimeZone() {
         return mTimeZone;
@@ -120,5 +121,13 @@ public class CurrentWeather {
 
     public void setSummary(String summary) {
         mSummary = summary;
+    }
+
+    public String getLocationLabel() {
+        return mLocationLabel;
+    }
+
+    public void setLocationLabel(String locationLabel) {
+        mLocationLabel = locationLabel;
     }
 }

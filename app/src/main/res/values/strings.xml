@@ -4,4 +4,10 @@
     <string name="error_title">Opps! Sorry!</string>
     <string name="error_message">There was an error. Please try again</string>
     <string name="network_unavailable_msg">Network is unavailable!</string>
+    <string name="google_maps_key" translatable="false" templateMergeStrategy="preserve">
+        AIzaSyCB0CtgwSDU9CEhGeskTA5XOahfbBx7pqo
+    </string>
+    <string name="Test">Portlandia, OR</string>
+    <string name="googleApiKey">AIzaSyCB0CtgwSDU9CEhGeskTA5XOahfbBx7pqo</string>
+    <string name="stormyApiKey">1ac90fcd9ba8424cb7da214b3328ec68</string>
 </resources>
