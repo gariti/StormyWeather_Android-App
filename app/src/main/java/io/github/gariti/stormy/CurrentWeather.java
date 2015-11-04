@@ -6,6 +6,7 @@ import java.util.TimeZone;
 
 /**
  * Created by Garrett Carver on 10/28/2015.
+ * Updated on 11/3/2015 by Garrett Carver
  */
 public class CurrentWeather {
     private String mIcon;
@@ -28,42 +29,46 @@ public class CurrentWeather {
     public String getIcon() {
         return mIcon;
     }
+
     public int getIconID() {
         //clear-day, clear-night, rain, snow, sleet, wind, fog, cloudy, partly-cloudy-day, partly-cloudy-night
         int iconId = R.drawable.clear_day;
 
-        if (mIcon.equals("clear-day")) {
-            iconId = R.drawable.clear_day;
-        }
-        else if (mIcon.equals("clear-night")) {
-            iconId = R.drawable.clear_night;
-        }
-        else if (mIcon.equals("rain")) {
-            iconId = R.drawable.rain;
-        }
-        else if (mIcon.equals("snow")) {
-            iconId = R.drawable.snow;
-        }
-        else if (mIcon.equals("sleet")) {
-            iconId = R.drawable.sleet;
-        }
-        else if (mIcon.equals("wind")) {
-            iconId = R.drawable.wind;
-        }
-        else if (mIcon.equals("fog")) {
-            iconId = R.drawable.fog;
-        }
-        else if (mIcon.equals("cloudy")) {
-            iconId = R.drawable.cloudy;
-        }
-        else if (mIcon.equals("partly-cloudy-day")) {
-            iconId = R.drawable.partly_cloudy;
-        }
-        else if (mIcon.equals("partly-cloudy-night")) {
-            iconId = R.drawable.cloudy_night;
+        switch (mIcon) {
+            case "clear-day":
+                iconId = R.drawable.clear_day;
+                break;
+            case "clear-night":
+                iconId = R.drawable.clear_night;
+                break;
+            case "rain":
+                iconId = R.drawable.rain;
+                break;
+            case "snow":
+                iconId = R.drawable.snow;
+                break;
+            case "sleet":
+                iconId = R.drawable.sleet;
+                break;
+            case "wind":
+                iconId = R.drawable.wind;
+                break;
+            case "fog":
+                iconId = R.drawable.fog;
+                break;
+            case "cloudy":
+                iconId = R.drawable.cloudy;
+                break;
+            case "partly-cloudy-day":
+                iconId = R.drawable.partly_cloudy;
+                break;
+            case "partly-cloudy-night":
+                iconId = R.drawable.cloudy_night;
+                break;
         }
         return iconId;
     }
+
 
     public void setIcon(String icon) {
         mIcon = icon;
@@ -77,17 +82,15 @@ public class CurrentWeather {
         SimpleDateFormat formatter = new SimpleDateFormat("h:mm a");
         formatter.setTimeZone(TimeZone.getTimeZone(getTimeZone()));
         Date dateTime = new Date(getTime() * 1000);
-        String timeString = formatter.format(dateTime);
-
-        return timeString;
+        return formatter.format(dateTime);
     }
 
     public void setTime(long time) {
         mTime = time;
     }
 
-    public double getTemperature() {
-        return mTemperature;
+    public int getTemperature() {
+        return (int) Math.round(mTemperature);
     }
 
     public void setTemperature(double temperature) {
@@ -102,8 +105,9 @@ public class CurrentWeather {
         mHumidity = humidity;
     }
 
-    public double getPrecipChance() {
-        return mPrecipChance;
+    public int getPrecipChance() {
+        double precipPercentage = mPrecipChance * 100;
+        return (int) Math.round(precipPercentage);
     }
 
     public void setPrecipChance(double precipChance) {
