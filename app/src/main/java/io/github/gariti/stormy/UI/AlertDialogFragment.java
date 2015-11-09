@@ -1,10 +1,12 @@
-package io.github.gariti.stormy;
+package io.github.gariti.stormy.ui;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.Context;
 import android.os.Bundle;
+
+import io.github.gariti.stormy.R;
 
 /**
  * Created by Garrett Carver on 10/27/2015.

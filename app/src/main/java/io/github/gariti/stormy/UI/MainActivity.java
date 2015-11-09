@@ -1,6 +1,7 @@
-package io.github.gariti.stormy;
+package io.github.gariti.stormy.ui;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.IntentSender;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
@@ -19,9 +20,7 @@ import android.widget.Toast;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
-import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.model.LatLng;
 
 import com.squareup.okhttp.Call;
 import com.squareup.okhttp.Callback;
@@ -29,6 +28,7 @@ import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -36,14 +36,23 @@ import java.io.IOException;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
+import io.github.gariti.stormy.R;
+import io.github.gariti.stormy.weather.Current;
+import io.github.gariti.stormy.weather.Day;
+import io.github.gariti.stormy.weather.Forecast;
+import io.github.gariti.stormy.weather.Hour;
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
-    private static final String TAG = MainActivity.class.getSimpleName();
+    public static final String TAG = MainActivity.class.getSimpleName();
+    public static final String DAILY_FORECAST = "DAILY_FORECAST";
+
     private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
-    private CurrentWeather mCurrentWeather;
+    private Forecast mForecast;
     private GoogleApiClient mGoogleApiClient;
     private double mLatitude;
     private double mLongitude;
+
 
     @Bind(R.id.timeLabel) TextView mTimeLabel;
     @Bind(R.id.degreeTextView) TextView mTemperatureLabel;
@@ -53,6 +62,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     @Bind(R.id.iconImageView) ImageView mIconImageView;
     @Bind(R.id.refreshImageView) ImageView mRefreshImageView;
     @Bind(R.id.progressBar) ProgressBar mProgressBar;
+
     //@Bind(R.id.locationLabel) TextView mLocationLabel; UPCOMING- update with City and State using reverse geocoding
 
     protected void onCreate(Bundle savedInstanceState) {
@@ -135,7 +145,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                         String jsonData = response.body().string();
                         Log.v(TAG, jsonData);
                         if (response.isSuccessful()) {
-                            mCurrentWeather = getCurrentDetails(jsonData);
+                            mForecast = parseForecastDetails(jsonData);
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
@@ -165,38 +175,91 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             mProgressBar.setVisibility(View.INVISIBLE);
             mRefreshImageView.setVisibility(View.VISIBLE);
         }
-
     }
 
     private void updateDisplay() {
-        mTemperatureLabel.setText(mCurrentWeather.getTemperature() + "");
-        mTimeLabel.setText("At " + mCurrentWeather.getFormattedTime() + " it will be");
-        mHumidityValue.setText(mCurrentWeather.getHumidity() + "");
-        mPrecipValue.setText(mCurrentWeather.getPrecipChance() + "%");
-        mSummaryLabel.setText(mCurrentWeather.getSummary());
+        Current current = mForecast.getCurrent();
+        mTemperatureLabel.setText(current.getTemperature() + "");
+        mTimeLabel.setText("At " + current.getFormattedTime() + " it will be");
+        mHumidityValue.setText(current.getHumidity() + "");
+        mPrecipValue.setText(current.getPrecipChance() + "%");
+        mSummaryLabel.setText(current.getSummary());
         //mLocationLabel.setText("City, State"); UPCOMING - display current city & state with reverse geocoding
 
-        Drawable drawable = ContextCompat.getDrawable(this, mCurrentWeather.getIconID());
+        Drawable drawable = ContextCompat.getDrawable(this, current.getIconID());
         mIconImageView.setImageDrawable(drawable);
     }
 
-    private CurrentWeather getCurrentDetails(String jsonData) throws JSONException {
+    private Forecast parseForecastDetails(String jsonData) throws JSONException {
+        Forecast forecast = new Forecast();
+        forecast.setCurrent(getCurrentDetails(jsonData));
+        forecast.setHourlyForecast(getHourlyForecast(jsonData));
+        forecast.setDailyForecast(getDailyForecast(jsonData));
+        return forecast;
+    }
+
+    private Day[] getDailyForecast(String jsonData) throws JSONException {
+        JSONObject forecast = new JSONObject(jsonData);
+        String timezone = forecast.getString("timezone");
+        JSONObject daily = forecast.getJSONObject("daily");
+        JSONArray data = daily.getJSONArray("data");
+
+        Day[] days = new Day[data.length()];
+
+        for (int i = 0; i < data.length(); i++) {
+            JSONObject jsonDay = data.getJSONObject(i);
+            Day day = new Day();
+
+            day.setTime(jsonDay.getLong("time"));
+            day.setSummary(jsonDay.getString("summary"));
+            day.setTemperatureMax(jsonDay.getDouble("temperatureMax"));
+            day.setIcon(jsonDay.getString("icon"));
+            day.setTimezone(timezone);
+
+            days[i] = day;
+        }
+
+        return days;
+    }
+
+    private Hour[] getHourlyForecast(String jsonData) throws JSONException{
+        JSONObject forecast = new JSONObject(jsonData);
+        String timezone = forecast.getString("timezone");
+        JSONObject hourly = forecast.getJSONObject("hourly");
+        JSONArray data = hourly.getJSONArray("data");
+
+        Hour[] hours = new Hour[data.length()];
+
+        for (int i = 0; i < data.length(); i++) {
+            JSONObject jsonHour = data.getJSONObject(i);
+            Hour hour = new Hour();
+
+            hour.setSummary(jsonHour.getString("summary"));
+            hour.setTemperature(jsonHour.getDouble("temperature"));
+            hour.setIcon(jsonHour.getString("icon"));
+            hour.setTimezone(timezone);
+            hours[i] = hour;
+        }
+        return hours;
+    }
+
+    private Current getCurrentDetails(String jsonData) throws JSONException {
         JSONObject forecast = new JSONObject(jsonData);
         JSONObject currently = forecast.getJSONObject("currently");
         String timezone = forecast.getString("timezone");
 
         //set current weather
-        CurrentWeather currentWeather = new CurrentWeather();
-        currentWeather.setTimeZone(timezone);
-        currentWeather.setIcon(currently.getString("icon"));
-        currentWeather.setTime(currently.getLong("time"));
-        currentWeather.setTemperature(currently.getDouble("temperature"));
-        currentWeather.setHumidity(currently.getDouble("humidity"));
-        currentWeather.setSummary(currently.getString("summary"));
+        Current current = new Current();
+        current.setTimeZone(timezone);
+        current.setIcon(currently.getString("icon"));
+        current.setTime(currently.getLong("time"));
+        current.setTemperature(currently.getDouble("temperature"));
+        current.setHumidity(currently.getDouble("humidity"));
+        current.setSummary(currently.getString("summary"));
 
-        Log.d(TAG, currentWeather.getFormattedTime());
+        Log.d(TAG, current.getFormattedTime());
 
-        return currentWeather;
+        return current;
     }
 
     private boolean isNetworkAvailable() {
@@ -219,6 +282,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     public void onConnected(Bundle connectionHint) {
         Log.i(TAG, "Location services connected.");
         getLocation();
+        getForecast(mLatitude, mLongitude);
     }
 
     private void getLocation() {
@@ -261,5 +325,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     public void onLocationChanged(Location location) {
         handleNewLocation(location);
+    }
+
+    @OnClick(R.id.dailyButton)
+    public void startDailyActivity(View view) {
+        Intent intent = new Intent(this, DailyForecastActivity.class);
+        intent.putExtra(DAILY_FORECAST, mForecast.getDailyForecast());
+        startActivity(intent);
     }
 }
