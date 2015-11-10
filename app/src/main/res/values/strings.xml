@@ -12,4 +12,5 @@
     <string name="stormyApiKey">1ac90fcd9ba8424cb7da214b3328ec68</string>
     <string name="title_activity_daily_forecast">DailyForecastActivity</string>
     <string name="no_daily_forecast_data">There is no data to display</string>
+    <string name="title_activity_hourly_forecast">HourlyForecastActivity</string>
 </resources>

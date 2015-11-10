@@ -46,8 +46,9 @@ import io.github.gariti.stormy.weather.Hour;
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
     public static final String TAG = MainActivity.class.getSimpleName();
     public static final String DAILY_FORECAST = "DAILY_FORECAST";
-
+    public static final String HOURLY_FORECAST = "HOURLY_FORECAST";
     private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
+
     private Forecast mForecast;
     private GoogleApiClient mGoogleApiClient;
     private double mLatitude;
@@ -218,7 +219,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
             days[i] = day;
         }
-
         return days;
     }
 
@@ -331,6 +331,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     public void startDailyActivity(View view) {
         Intent intent = new Intent(this, DailyForecastActivity.class);
         intent.putExtra(DAILY_FORECAST, mForecast.getDailyForecast());
+        startActivity(intent);
+    }
+    @OnClick(R.id.hourlyButton)
+    public void startHourlyActivity(View view) {
+        Intent intent = new Intent(this, HourlyForecastActivity.class);
+        intent.putExtra(HOURLY_FORECAST, mForecast.getHourlyForecast());
         startActivity(intent);
     }
 }
